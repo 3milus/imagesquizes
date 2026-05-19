@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Guess the Category</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen active">
+    <div class="home-hero">
+      <h1>Guess the Category</h1>
+      <p>See an image. Make a call. How sharp are you?</p>
+    </div>
+    <div id="quiz-list" class="quiz-list"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="screen">
+    <header class="quiz-topbar">
+      <button id="btn-back" class="btn-back" aria-label="Exit quiz">✕</button>
+      <span id="lbl-counter" class="lbl-counter" aria-live="polite"></span>
+      <span id="lbl-score" class="lbl-score" aria-live="polite"></span>
+    </header>
+    <div class="timer-track">
+      <div id="timer-bar" class="timer-bar"></div>
+    </div>
+    <div class="img-stage">
+      <img id="quiz-img" src="" alt="What is this?" class="quiz-img">
+    </div>
+    <div id="feedback-area" class="feedback-area" hidden>
+      <p id="feedback-label" class="feedback-label"></p>
+      <p id="feedback-desc" class="feedback-desc"></p>
+    </div>
+    <div id="btn-area" class="btn-area"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-results" class="screen">
+    <div class="results-wrap">
+      <h2 class="results-title">Quiz Complete</h2>
+      <div class="score-display">
+        <span id="res-score" class="score-num"></span>
+        <span class="score-sep">/</span>
+        <span id="res-total" class="score-denom"></span>
+      </div>
+      <p id="res-message" class="res-message"></p>
+      <div id="res-items" class="res-items"></div>
+      <div class="res-actions">
+        <button id="btn-again" class="btn-primary">Play Again</button>
+        <button id="btn-home" class="btn-secondary">All Quizzes</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

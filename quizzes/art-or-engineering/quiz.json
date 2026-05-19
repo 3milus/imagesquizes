@@ -1,0 +1,58 @@
+{
+  "id": "art-or-engineering",
+  "title": "Art or Engineering?",
+  "categories": ["Art", "Engineering"],
+  "timePerQuestion": 10,
+  "items": [
+    {
+      "image": "item1.webp",
+      "answer": "Engineering",
+      "description": "Fórcola — a precisely carved wooden fitting that holds the oar of a Venetian gondola. Every curve is functional."
+    },
+    {
+      "image": "item2.png",
+      "answer": "Art",
+      "description": "A wood carved art piece. Expressive form over function."
+    },
+    {
+      "image": "item3.avif",
+      "answer": "Art",
+      "description": "A wood carved art piece. The shape exists for its own sake."
+    },
+    {
+      "image": "item4.webp",
+      "answer": "Engineering",
+      "description": "An assortment of bolts and windings from a vendor catalogue. Pure hardware."
+    },
+    {
+      "image": "item5.png",
+      "answer": "Engineering",
+      "description": "A regular cog or gear — a fundamental mechanical component that transmits force and motion."
+    },
+    {
+      "image": "item6.png",
+      "answer": "Engineering",
+      "description": "An actual Rorschach inkblot — a standardised psychological diagnostic tool with strict production criteria."
+    },
+    {
+      "image": "item7.png",
+      "answer": "Art",
+      "description": "A Rorschach-inspired art piece. It looks clinical, but it exists to provoke, not diagnose."
+    },
+    {
+      "image": "item8.png",
+      "answer": "Engineering",
+      "description": "Archimedes screws — one of history's oldest and most elegant devices for moving water uphill."
+    },
+    {
+      "image": "item9.png",
+      "answer": "Art",
+      "description": "A wooden helix sculpture. The spiral form is chosen for beauty and concept, not mechanics."
+    },
+    {
+      "image": "item10.png",
+      "answer": "Art",
+      "description": "A spiral sculpture. Geometric and meditative — made to be seen, not used."
+    }
+  ]
+}
