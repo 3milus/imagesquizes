@@ -1,26 +1,31 @@
 const $ = id => document.getElementById(id);
 
 // ── State ──────────────────────────────────────────────────────────────────
-let quiz     = null;   // loaded quiz.json data
-let items    = [];     // shuffled items for this round
-let idx      = 0;      // current item index
-let score    = 0;
-let answers  = [];     // { item, given, correct, timeout }
-let timerIntv  = null;
-let timerTO    = null;
+let quiz        = null;
+let items       = [];
+let idx         = 0;
+let score       = 0;
+let answers     = [];
+let timerIntv   = null;
+let timerTO     = null;
 let hasAnswered = false;
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 async function init() {
-  $('btn-back').addEventListener('click', () => { killTimer(); showScreen('home'); });
-  $('btn-again').addEventListener('click', playAgain);
+  $('btn-back').addEventListener('click', () => {
+    killTimer();
+    if (window.mpCallbacks?.onExit) window.mpCallbacks.onExit();
+    else showScreen('home');
+  });
+  $('btn-again').addEventListener('click', playSoloAgain);
   $('btn-home').addEventListener('click', () => showScreen('home'));
 
   try {
     const quizzes = await loadJSON('quizzes.json');
     renderHome(quizzes);
   } catch {
-    $('quiz-list').innerHTML = '<p class="error-msg">Could not load quizzes. Open via a web server or GitHub Pages — <code>file://</code> won\'t work.</p>';
+    $('quiz-list').innerHTML =
+      '<p class="error-msg">Could not load quizzes. Open via a web server or GitHub Pages.</p>';
   }
 }
 
@@ -37,23 +42,21 @@ function renderHome(quizzes) {
         <div class="quiz-card-desc">${q.description}</div>
         <div class="quiz-card-meta">${q.itemCount} questions &middot; ${q.timePerQuestion}s per image</div>
       </div>
-      <button class="quiz-start-btn">Start &rarr;</button>
+      <button class="quiz-start-btn">Play Solo &rarr;</button>
     </div>
   `).join('');
 
   $('quiz-list').querySelectorAll('.quiz-card').forEach(card => {
-    card.addEventListener('click', () => startQuiz(card.dataset.id));
+    card.addEventListener('click', () => startSoloQuiz(card.dataset.id));
   });
 }
 
-// ── Quiz ───────────────────────────────────────────────────────────────────
-async function startQuiz(id) {
+// ── Solo quiz ──────────────────────────────────────────────────────────────
+async function startSoloQuiz(id) {
   try {
     quiz    = await loadJSON(`quizzes/${id}/quiz.json`);
     items   = shuffle([...quiz.items]);
-    idx     = 0;
-    score   = 0;
-    answers = [];
+    idx     = 0; score = 0; answers = [];
     showScreen('quiz');
     showQuestion();
   } catch {
@@ -61,6 +64,16 @@ async function startQuiz(id) {
   }
 }
 
+// Called by multiplayer.js to start the quiz with a server-determined item order.
+window.startMpQuiz = function(quizData, orderedItems) {
+  quiz    = quizData;
+  items   = orderedItems;
+  idx     = 0; score = 0; answers = [];
+  showScreen('quiz');
+  showQuestion();
+};
+
+// ── Question ───────────────────────────────────────────────────────────────
 function showQuestion() {
   const item = items[idx];
   hasAnswered = false;
@@ -68,15 +81,12 @@ function showQuestion() {
   $('lbl-counter').textContent = `${idx + 1} / ${items.length}`;
   $('lbl-score').textContent   = `Score: ${score}`;
 
-  // Reset image state
   const img = $('quiz-img');
   img.className = 'quiz-img';
   img.src = `quizzes/${quiz.id}/images/${item.image}`;
 
-  // Reset feedback
   $('feedback-area').hidden = true;
 
-  // Build category buttons
   const btnArea = $('btn-area');
   btnArea.hidden = false;
   btnArea.innerHTML = quiz.categories.map(cat => {
@@ -93,13 +103,11 @@ function showQuestion() {
 // ── Timer ──────────────────────────────────────────────────────────────────
 function startTimer(dur) {
   killTimer();
-
   const bar = $('timer-bar');
   bar.style.transition = 'none';
   bar.style.width = '100%';
   bar.style.backgroundColor = 'var(--correct)';
-  void bar.offsetWidth; // force reflow so reset is instant
-
+  void bar.offsetWidth;
   bar.style.transition = `width ${dur}s linear, background-color 0.6s ease`;
   bar.style.width = '0%';
 
@@ -111,9 +119,7 @@ function startTimer(dur) {
     else                 bar.style.backgroundColor = 'var(--wrong)';
   }, 150);
 
-  timerTO = setTimeout(() => {
-    if (!hasAnswered) handleAnswer(null);
-  }, dur * 1000);
+  timerTO = setTimeout(() => { if (!hasAnswered) handleAnswer(null); }, dur * 1000);
 }
 
 function killTimer() {
@@ -125,7 +131,7 @@ function killTimer() {
 function freezeTimer() {
   killTimer();
   const bar = $('timer-bar');
-  const { width: w } = bar.getBoundingClientRect();
+  const { width: w }  = bar.getBoundingClientRect();
   const { width: pw } = bar.parentElement.getBoundingClientRect();
   bar.style.transition = 'none';
   if (pw > 0) bar.style.width = (w / pw * 100) + '%';
@@ -144,20 +150,18 @@ function handleAnswer(cat) {
   if (correct) score++;
   answers.push({ item, given: cat, correct, timeout });
 
-  // Image border feedback
   $('quiz-img').classList.add(correct ? 'correct' : 'wrong');
 
-  // Text feedback
   const lbl = $('feedback-label');
   if (timeout) {
-    lbl.textContent  = "Time's up!";
-    lbl.className    = 'feedback-label timeout';
+    lbl.textContent = "Time's up!";
+    lbl.className   = 'feedback-label timeout';
   } else if (correct) {
-    lbl.textContent  = '✓ Correct!';
-    lbl.className    = 'feedback-label correct';
+    lbl.textContent = '✓ Correct!';
+    lbl.className   = 'feedback-label correct';
   } else {
-    lbl.textContent  = `✗ It's ${item.answer}`;
-    lbl.className    = 'feedback-label wrong';
+    lbl.textContent = `✗ It's ${item.answer}`;
+    lbl.className   = 'feedback-label wrong';
   }
   $('feedback-desc').textContent = item.description;
   $('feedback-area').hidden = false;
@@ -165,61 +169,65 @@ function handleAnswer(cat) {
 
   setTimeout(() => {
     idx++;
-    if (idx >= items.length) showResults();
+    if (idx >= items.length) onQuizFinished();
     else showQuestion();
   }, 2500);
 }
 
-// ── Results ────────────────────────────────────────────────────────────────
-function showResults() {
+// Branches to solo results or hands off to multiplayer.js
+function onQuizFinished() {
+  if (window.mpCallbacks?.onQuizFinished) {
+    window.mpCallbacks.onQuizFinished(score, answers);
+  } else {
+    showSoloResults();
+  }
+}
+
+// ── Solo results ───────────────────────────────────────────────────────────
+function showSoloResults() {
   $('res-score').textContent = score;
   $('res-total').textContent = items.length;
 
   const pct = score / items.length;
-  const msg = pct === 1   ? 'Flawless. No hesitation.'
-            : pct >= 0.8  ? 'Sharp eye. Almost perfect.'
-            : pct >= 0.6  ? 'Solid. A few tricky ones got you.'
-            : pct >= 0.4  ? 'It\'s harder than it looks, isn\'t it?'
-            :               'Better luck next time!';
-  $('res-message').textContent = msg;
+  $('res-message').textContent =
+    pct === 1   ? 'Flawless. No hesitation.'
+    : pct >= 0.8 ? 'Sharp eye. Almost perfect.'
+    : pct >= 0.6 ? 'Solid. A few tricky ones got you.'
+    : pct >= 0.4 ? "It's harder than it looks, isn't it?"
+    :              'Better luck next time!';
 
   $('res-items').innerHTML = answers.map(({ item, correct, given, timeout }) => {
     const label = timeout
       ? `Time's up — it's ${item.answer}`
-      : correct
-        ? `Correct — ${item.answer}`
-        : `You said ${given}, it's ${item.answer}`;
+      : correct ? `Correct — ${item.answer}`
+      : `You said ${given}, it's ${item.answer}`;
     return `
       <div class="res-item ${correct ? 'correct' : 'wrong'}" tabindex="0">
         <img src="quizzes/${quiz.id}/images/${item.image}" alt="" loading="lazy">
         <div class="res-item-badge">${correct ? '✓' : '✗'}</div>
         <div class="res-tooltip">${label}<br><em>${item.description}</em></div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 
-  // Tap to toggle tooltip on touch devices
   $('res-items').querySelectorAll('.res-item').forEach(el => {
     el.addEventListener('click', () => {
-      const isOpen = el.classList.contains('tip-open');
+      const open = el.classList.contains('tip-open');
       $('res-items').querySelectorAll('.res-item').forEach(e => e.classList.remove('tip-open'));
-      if (!isOpen) el.classList.add('tip-open');
+      if (!open) el.classList.add('tip-open');
     });
   });
 
   showScreen('results');
 }
 
-function playAgain() {
+function playSoloAgain() {
   items   = shuffle([...quiz.items]);
-  idx     = 0;
-  score   = 0;
-  answers = [];
+  idx     = 0; score = 0; answers = [];
   showScreen('quiz');
   showQuestion();
 }
 
-// ── Utils ──────────────────────────────────────────────────────────────────
+// ── Utils (globals — also used by multiplayer.js) ──────────────────────────
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(`screen-${name}`).classList.add('active');

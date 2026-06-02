@@ -10,16 +10,97 @@
 </head>
 <body>
 
-  <!-- HOME -->
+  <!-- ── HOME ──────────────────────────────────────────────────────────── -->
   <section id="screen-home" class="screen active">
     <div class="home-hero">
       <h1>Guess the Category</h1>
       <p>See an image. Make a call. How sharp are you?</p>
     </div>
-    <div id="quiz-list" class="quiz-list"></div>
+
+    <div class="home-section">
+      <div class="section-label">Solo</div>
+      <div id="quiz-list" class="quiz-list"></div>
+    </div>
+
+    <div class="home-section" id="mp-home-section">
+      <div class="section-label">Play with Friends</div>
+      <div class="mp-actions">
+        <button id="btn-create-room" class="btn-mp-create">
+          <span class="mp-icon">🎮</span>
+          <div class="mp-text">
+            <span class="mp-title">Create a Room</span>
+            <span class="mp-sub">Host a game — share the code with friends</span>
+          </div>
+          <span class="mp-chevron">›</span>
+        </button>
+        <div class="mp-join-row">
+          <input id="input-home-code" type="text" maxlength="5"
+                 placeholder="Room code" class="input-code"
+                 autocapitalize="characters" autocomplete="off" spellcheck="false">
+          <button id="btn-home-join" class="btn-mp-join">Join →</button>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- QUIZ -->
+  <!-- ── MP SETUP (name + optional code) ──────────────────────────────── -->
+  <section id="screen-mp-setup" class="screen">
+    <div class="setup-wrap">
+      <button id="btn-setup-back" class="btn-back-text">← Back</button>
+      <h2 id="setup-title">Create a Room</h2>
+      <p id="setup-desc" class="setup-desc"></p>
+
+      <div id="setup-code-field" class="field" hidden>
+        <label class="field-label">Room Code</label>
+        <input id="input-join-code" type="text" maxlength="5"
+               class="input-code big-input" placeholder="e.g. XK7QM"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <label class="field-label">Your Name</label>
+        <input id="input-player-name" type="text" maxlength="20"
+               class="text-input" placeholder="e.g. Emil" autocomplete="off">
+      </div>
+
+      <button id="btn-setup-confirm" class="btn-primary btn-full">Create Room →</button>
+      <p id="setup-error" class="error-msg" hidden></p>
+    </div>
+  </section>
+
+  <!-- ── LOBBY ─────────────────────────────────────────────────────────── -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby-wrap">
+      <button id="btn-lobby-leave" class="btn-back-text">← Leave Room</button>
+
+      <div class="lobby-code-block">
+        <div class="lobby-code-label">Room Code</div>
+        <div id="lobby-code" class="lobby-code"></div>
+        <button id="btn-copy-code" class="btn-copy">Copy</button>
+      </div>
+
+      <div id="lobby-quiz-name" class="lobby-quiz-name"></div>
+
+      <div class="lobby-players-wrap">
+        <div class="section-label">
+          Players (<span id="lobby-player-count">0</span>)
+        </div>
+        <div id="lobby-player-list" class="lobby-player-list"></div>
+      </div>
+
+      <div id="host-controls" class="host-controls" hidden>
+        <button id="btn-start-game" class="btn-primary btn-full" disabled>
+          Start Quiz
+        </button>
+        <p id="lobby-hint" class="muted-text">Waiting for players to join…</p>
+      </div>
+      <p id="guest-waiting-msg" class="muted-text" hidden>
+        Waiting for the host to start…
+      </p>
+    </div>
+  </section>
+
+  <!-- ── QUIZ (unchanged) ──────────────────────────────────────────────── -->
   <section id="screen-quiz" class="screen">
     <header class="quiz-topbar">
       <button id="btn-back" class="btn-back" aria-label="Exit quiz">✕</button>
@@ -39,7 +120,19 @@
     <div id="btn-area" class="btn-area"></div>
   </section>
 
-  <!-- RESULTS -->
+  <!-- ── WAITING (finished early, others still playing) ────────────────── -->
+  <section id="screen-waiting" class="screen">
+    <div class="waiting-wrap">
+      <div class="waiting-score-block">
+        <div class="waiting-score-label">Your Score</div>
+        <div id="waiting-score" class="waiting-score-num"></div>
+      </div>
+      <p class="waiting-subtitle">Waiting for others to finish…</p>
+      <div id="waiting-player-list" class="waiting-player-list"></div>
+    </div>
+  </section>
+
+  <!-- ── SOLO RESULTS (unchanged) ──────────────────────────────────────── -->
   <section id="screen-results" class="screen">
     <div class="results-wrap">
       <h2 class="results-title">Quiz Complete</h2>
@@ -57,6 +150,24 @@
     </div>
   </section>
 
+  <!-- ── GROUP RESULTS ─────────────────────────────────────────────────── -->
+  <section id="screen-group-results" class="screen">
+    <div class="group-results-wrap">
+      <h2 class="results-title">Final Results</h2>
+      <div id="leaderboard" class="leaderboard"></div>
+      <div class="res-actions">
+        <button id="btn-play-again-mp" class="btn-primary" hidden>Play Again</button>
+        <button id="btn-leave-room" class="btn-secondary">Leave Room</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Firebase SDK (compat — no bundler required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script src="multiplayer.js"></script>
 </body>
 </html>
