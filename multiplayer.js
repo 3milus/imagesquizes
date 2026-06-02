@@ -2,13 +2,14 @@
 // Uses Firebase Realtime Database + Anonymous Auth (compat SDK loaded in index.html).
 
 // ── State ──────────────────────────────────────────────────────────────────
-let mpDb       = null;
-let mpUid      = null;   // Firebase anonymous auth UID
-let mpRoom     = null;   // current room code
-let mpIsHost   = false;
-let mpRoomRef  = null;   // Firebase ref — kept for cleanup
-let mpQuizData = null;   // quiz.json loaded for this session
+let mpDb        = null;
+let mpUid       = null;   // Firebase anonymous auth UID
+let mpRoom      = null;   // current room code
+let mpIsHost    = false;
+let mpRoomRef   = null;   // Firebase ref — kept for cleanup
+let mpQuizData  = null;   // quiz.json loaded for this session
 let mpSetupMode = 'create'; // 'create' | 'join'
+let mpHasPlayed = false;  // prevents re-triggering startMpQuiz on every Firebase update
 
 // ── Init ───────────────────────────────────────────────────────────────────
 async function mpInit() {
@@ -191,6 +192,7 @@ function playerRecord(name, isHost) {
 
 // ── Lobby ──────────────────────────────────────────────────────────────────
 function enterLobby() {
+  mpHasPlayed = false;  // reset so the next round can start
   $('lobby-code').textContent     = mpRoom;
   $('lobby-quiz-name').textContent = mpQuizData.title;
   $('host-controls').hidden       = !mpIsHost;
@@ -233,7 +235,8 @@ function attachRoomListener() {
     }
 
     // ── Status-driven transitions ────────────────────────────────────────
-    if (room.status === 'playing' && activeId !== 'screen-quiz') {
+    if (room.status === 'playing' && !mpHasPlayed) {
+      mpHasPlayed = true;
       const ordered = room.itemOrder.map(i => mpQuizData.items[i]);
       window.startMpQuiz(mpQuizData, ordered);
     }
